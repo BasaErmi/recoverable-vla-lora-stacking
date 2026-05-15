@@ -12,7 +12,7 @@ Language Processing**, Spring 2026.
 
 [![Demo preview](assets/demo_preview.gif)](https://doi.org/10.5281/zenodo.20058809)
 
-Full archive: https://doi.org/10.5281/zenodo.20058809
+Click the link to watch the full demo video: https://doi.org/10.5281/zenodo.20058809
 
 ## Layout
 
