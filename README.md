@@ -4,6 +4,15 @@ Clean experiment code for prompted curriculum learning and LoRA stacking on the
 SO101 CUHK letter-sorting benchmark. The repository is organized around the
 actual robot-learning pipeline rather than paper figure generation.
 
+This repository accompanies the final project for **CUHKSZ CSC6052: Natural
+Language Processing**, Spring 2026.
+
+## Demo Videos
+
+[![Demo preview](assets/demo_preview.gif)](https://doi.org/10.5281/zenodo.20058809)
+
+Click the preview above to open the full demo video archive.
+
 ## Layout
 
 - `control_scripts/`: experiment wrappers for hardware setup, SO101 teleop,
