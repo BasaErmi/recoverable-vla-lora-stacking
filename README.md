@@ -1,8 +1,9 @@
 # Recoverable VLA LoRA Stacking
 
 Clean experiment code for prompted curriculum learning and LoRA stacking on the
-SO101 CUHK letter-sorting benchmark. The repository is organized around the
-actual robot-learning pipeline rather than paper figure generation.
+SO101 CUHK letter-sorting benchmark. It includes scripts for SO101 teleoperation,
+demonstration recording, dataset construction, pi0.5 LoRA training, LoRA
+stacking, and real-robot deployment.
 
 This repository accompanies the final project for **CUHKSZ CSC6052: Natural
 Language Processing**, Spring 2026.
