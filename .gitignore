@@ -1,0 +1,21 @@
+__pycache__/
+*.py[cod]
+*.so
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Local experiment outputs
+data/
+datasets/
+outputs/
+checkpoints/
+logs/
+wandb/
+
+# OS/editor files
+.DS_Store
+*.swp
+*.swo
