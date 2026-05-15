@@ -16,9 +16,9 @@ Click the link to watch the full demo video: https://doi.org/10.5281/zenodo.2005
 
 ## Layout
 
-- `control_scripts/`: experiment wrappers for hardware setup, SO101 teleop,
-  dataset recording, dataset aggregation, OpenPI pi0.5 LoRA training, watchdog
-  monitoring, and deployment.
+- `scripts/`: curated paper workflow scripts for SO101 teleoperation,
+  demonstration recording, dataset aggregation, OpenPI pi0.5 LoRA training, and
+  real-robot deployment.
 - `openpi/`: OpenPI source snapshot used by the experiments.  The important
   project-specific files are:
   - `openpi/src/openpi/policies/so101_policy.py`
@@ -41,30 +41,30 @@ machine.
 
 ```bash
 OPENPI_DIR="$PWD/openpi" \
-bash control_scripts/08_teleoperate_so101.sh
+bash scripts/teleoperate_so101.sh
 ```
 
-### 2. Record Demonstrations
+### 2. Record Curriculum Demonstrations
 
-Single-letter boxed pick-and-place:
+Bootstrap grounding demonstrations:
 
 ```bash
-bash control_scripts/24_record_cuhk_pick_place_slots.sh all
+bash scripts/record_bootstrap_grounding.sh all
 ```
 
-Recovery and augmentation stages:
+Failure recovery and hard-state demonstrations:
 
 ```bash
-bash control_scripts/33_record_cuhk_stage3_swap_recovery.sh
-bash control_scripts/42_record_cuhk_stage4_two_random_two_fixed.sh
-bash control_scripts/43_record_cuhk_stage4_near_slot_alignment.sh
+bash scripts/record_swap_recovery.sh all
+bash scripts/record_two_random_two_fixed.sh all
+bash scripts/record_near_slot_alignment.sh all
 ```
 
 ### 3. Build Aggregated Datasets
 
 ```bash
-bash control_scripts/39_build_stage3_curated_swap_x2_dataset.sh
-bash control_scripts/44_build_stage4_s2_recovery_x1_stage4_x4_dataset.sh
+bash scripts/build_stage3_recovery_dataset.sh
+bash scripts/build_stage4_curriculum_dataset.sh
 ```
 
 ### 4. Train pi0.5 LoRA Policies
@@ -74,7 +74,7 @@ Stage 3 curated recovery:
 ```bash
 OPENPI_DIR="$PWD/openpi" \
 PYTHON_BIN="$PWD/openpi/.venv/bin/python" \
-bash control_scripts/40_train_openpi_stage3_curated_swap_x2.sh
+bash scripts/train_stage3_recovery_lora.sh
 ```
 
 Stage 4 recovery/alignment continuation:
@@ -82,7 +82,7 @@ Stage 4 recovery/alignment continuation:
 ```bash
 OPENPI_DIR="$PWD/openpi" \
 PYTHON_BIN="$PWD/openpi/.venv/bin/python" \
-bash control_scripts/45_train_openpi_stage4_s2_recovery_x1_stage4_x4.sh
+bash scripts/train_stage4_curriculum_lora.sh
 ```
 
 The configs used by these launchers live in
@@ -112,7 +112,7 @@ OPENPI_DIR="$PWD/openpi" \
 OPENPI_PYTHON="$PWD/openpi/.venv/bin/python" \
 OPENPI_CONFIG=pi05_so101_cuhksz_stage4_s2_recovery_x1_stage4_x4_lora \
 OPENPI_CHECKPOINT=/path/to/checkpoint \
-bash control_scripts/25_deploy_openpi_pi05_so101.sh \
+bash scripts/deploy_openpi_so101.sh \
   "Sort the visible CUHK letter blocks into the lower target slots in left-to-right order C, U, H, K."
 ```
 
@@ -123,8 +123,8 @@ The same deployment script can serve a stacked checkpoint by setting
 
 ```bash
 python -m pytest test_lora_stacking.py -q
-bash -n control_scripts/*.sh
-python -m py_compile lora_stacking.py control_scripts/*.py
+bash -n scripts/*.sh
+python -m py_compile lora_stacking.py scripts/*.py
 ```
 
 These checks validate syntax and the standalone LoRA stacking math.  Real

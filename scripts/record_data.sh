@@ -1,18 +1,18 @@
 #!/bin/bash
 # ============================================================
-# SO101 数据采集
+# SO101 demonstration recording
 #
-# 用法:
+# Usage:
 #   conda activate evo-rl
-#   bash control_scripts/09_record_data.sh
-#   bash control_scripts/09_record_data.sh guanlin8/cuhksz_pick_recalib_20260425 "pick up the letter" 30 15 5 false
+#   bash scripts/record_data.sh
+#   bash scripts/record_data.sh guanlin8/cuhksz_pick_recalib_20260425 "pick up the letter" 30 15 5 false
 #
-# 前提: 已完成标定 + 遥操作验证
+# Prerequisite: calibration and teleoperation check have been completed.
 #
-# 热键:
-#   Right Arrow  — 结束当前 episode, 开始下一个
-#   Left Arrow   — 重录当前 episode
-#   Esc          — 停止采集
+# Hotkeys:
+#   Right Arrow  - finish current episode and start the next one
+#   Left Arrow   - rerecord current episode
+#   Esc          - stop recording
 # ============================================================
 
 set -e
@@ -74,7 +74,7 @@ if [ ! -x "$LEROBOT_RECORD" ]; then
     exit 1
 fi
 
-# --- 可配置参数 ---
+# --- Configurable parameters ---
 DATASET_NAME="${1:-pi05_so101_demo}"
 TASK_DESC="${2:-pick up the object}"
 NUM_EPISODES="${3:-10}"
@@ -133,52 +133,51 @@ ln -sfn "$RECORD_RUN_DIR" "$RECORD_LOG_ROOT/latest"
     echo "camera_config=$CAMERA_CONFIG"
 } > "$RUN_INFO"
 
-echo "=== SO101 数据采集 ==="
-echo "数据集: $DATASET_NAME"
-echo "任务: $TASK_DESC"
-echo "集数: $NUM_EPISODES"
-echo "数据频率: ${DATASET_FPS}fps"
-echo "每集时长: ${EPISODE_TIME_S}s"
-echo "相机 stale-frame 容忍: ${CAMERA_MAX_AGE_MS}ms"
-echo "相机周期诊断输出: ${CAMERA_DIAG_INTERVAL_S}s (0=关闭)"
-echo "相机: $CAMERA_CONFIG"
-echo "视频编码: $VIDEO_CODEC"
-echo "Rerun 显示: $DISPLAY_DATA"
-echo "Rerun 压缩显示: $DISPLAY_COMPRESSED_IMAGES"
-echo "终端输出: $RECORD_TERMINAL_OUTPUT_DESC"
-echo "采完同步到 data root: $COPY_TO_DATA_ROOT ($DATA_ROOT)"
-echo "Follower 标定: $FOLLOWER_CALIBRATION"
-echo "Leader 标定: $LEADER_CALIBRATION"
+echo "=== SO101 demonstration recording ==="
+echo "Dataset: $DATASET_NAME"
+echo "Task: $TASK_DESC"
+echo "Episodes: $NUM_EPISODES"
+echo "Dataset FPS: ${DATASET_FPS}fps"
+echo "Episode duration: ${EPISODE_TIME_S}s"
+echo "Camera stale-frame tolerance: ${CAMERA_MAX_AGE_MS}ms"
+echo "Camera diagnostic interval: ${CAMERA_DIAG_INTERVAL_S}s (0=off)"
+echo "Cameras: $CAMERA_CONFIG"
+echo "Video codec: $VIDEO_CODEC"
+echo "Rerun display: $DISPLAY_DATA"
+echo "Rerun compressed images: $DISPLAY_COMPRESSED_IMAGES"
+echo "Terminal output: $RECORD_TERMINAL_OUTPUT_DESC"
+echo "Copy finished dataset to data root: $COPY_TO_DATA_ROOT ($DATA_ROOT)"
+echo "Follower calibration: $FOLLOWER_CALIBRATION"
+echo "Leader calibration: $LEADER_CALIBRATION"
 echo "LeRobot: $LEROBOT_RECORD"
 echo "Metrics log: $RECORD_METRICS_LOG"
 echo "Record log: $RECORD_STDOUT_LOG"
-echo "Monitor: bash control_scripts/21_monitor_record_fps.sh"
 echo ""
-echo "按回车开始..."
+echo "Press Enter to start..."
 read
 
 RESUME_FLAG="--resume=false"
 if [ "$RESUME" = "true" ]; then
     RESUME_FLAG="--resume=true"
-    echo "(续录模式)"
+    echo "(resume mode)"
 fi
 
 mkdir -p "$CALIBRATION_SNAPSHOT_DIR"
 if [ -f "$FOLLOWER_CALIBRATION" ]; then
     cp "$FOLLOWER_CALIBRATION" "$CALIBRATION_SNAPSHOT_DIR/follower_${FOLLOWER_ID}.json"
 else
-    echo "ERROR: follower 标定文件不存在: $FOLLOWER_CALIBRATION" >&2
+    echo "ERROR: follower calibration file not found: " >&2
     exit 1
 fi
 
 if [ -f "$LEADER_CALIBRATION" ]; then
     cp "$LEADER_CALIBRATION" "$CALIBRATION_SNAPSHOT_DIR/leader_${LEADER_ID}.json"
 else
-    echo "ERROR: leader 标定文件不存在: $LEADER_CALIBRATION" >&2
+    echo "ERROR: leader calibration file not found: " >&2
     exit 1
 fi
 
-echo "标定快照已保存: $CALIBRATION_SNAPSHOT_DIR"
+echo "Calibration snapshot saved: "
 
 FINALIZED_DATASET_ARTIFACTS=0
 finalize_dataset_artifacts() {
@@ -190,13 +189,13 @@ finalize_dataset_artifacts() {
     if [ -d "$LOCAL_DATASET_DIR" ]; then
         mkdir -p "$LOCAL_DATASET_DIR/meta/calibration"
         cp "$CALIBRATION_SNAPSHOT_DIR"/*.json "$LOCAL_DATASET_DIR/meta/calibration/"
-        echo "标定快照已复制到 dataset: $LOCAL_DATASET_DIR/meta/calibration/"
+        echo "Calibration snapshot copied to dataset: /meta/calibration/"
 
         if [ "$COPY_TO_DATA_ROOT" = "1" ]; then
             DATASET_DATA_ROOT="$DATA_ROOT/$DATASET_NAME"
             mkdir -p "$DATA_ROOT/$(dirname "$DATASET_NAME")"
             rsync -a --progress "$LOCAL_DATASET_DIR/" "$DATASET_DATA_ROOT/"
-            echo "数据集已同步到: $DATASET_DATA_ROOT"
+            echo "Dataset synced to: "
         fi
     fi
 }
@@ -252,13 +251,13 @@ if [ "$RECORD_STATUS" -ne 0 ]; then
 fi
 
 echo ""
-echo "=== 采集完成 ==="
-echo "数据保存在本地: ~/.cache/huggingface/lerobot/$DATASET_NAME"
-echo "标定快照: $CALIBRATION_SNAPSHOT_DIR"
+echo "=== Recording complete ==="
+echo "Local dataset: ~/.cache/huggingface/lerobot/$DATASET_NAME"
+echo "Calibration snapshot: $CALIBRATION_SNAPSHOT_DIR"
 echo ""
-echo "上传到 HuggingFace Hub:"
+echo "Upload to HuggingFace Hub:"
 echo "  huggingface-cli upload $DATASET_NAME ~/.cache/huggingface/lerobot/$DATASET_NAME"
 echo ""
-echo "复制到 lab 数据目录:"
+echo "Copy to lab data directory:"
 echo "  mkdir -p /home/ubuntu/data/$(dirname "$DATASET_NAME")"
 echo "  rsync -av --progress ~/.cache/huggingface/lerobot/$DATASET_NAME/ /home/ubuntu/data/$DATASET_NAME/"

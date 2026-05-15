@@ -1,12 +1,12 @@
 #!/bin/bash
 # ============================================================
-# SO101 遥操作验证
+# SO101 teleoperation check
 #
-# 用法:
+# Usage:
 #   conda activate evo-rl
-#   bash control_scripts/08_teleoperate_so101.sh
+#   bash scripts/teleoperate_so101.sh
 #
-# 前提: 已完成标定 (07_calibrate_so101.sh)
+# Prerequisite: SO101 leader and follower arms have been calibrated.
 # ============================================================
 
 set -e
@@ -80,13 +80,13 @@ if [ ! -x "$LEROBOT_TELEOPERATE" ]; then
     exit 1
 fi
 
-echo "=== SO101 遥操作验证 ==="
+echo "=== SO101 teleoperation check ==="
 echo "LeRobot: $LEROBOT_TELEOPERATE"
 echo ""
-echo "方式 1: 纯遥操作 (无摄像头)"
-echo "方式 2: 遥操作 + 摄像头预览"
+echo "Mode 1: teleoperation without cameras"
+echo "Mode 2: teleoperation with camera preview"
 echo ""
-echo "请选择 (1/2): "
+echo "Select mode (1/2): "
 read choice
 
 RUN_STAMP="$(date +%Y%m%d_%H%M%S)"
@@ -111,12 +111,11 @@ ln -sfn "$RUN_DIR" "$TELEOP_LOG_ROOT/latest"
 } > "$RUN_INFO"
 
 echo "Metrics log: $TELEOP_METRICS_LOG"
-echo "Monitor: bash control_scripts/20_monitor_teleop_fps.sh"
 echo ""
 
 case "$choice" in
     2)
-        echo "启动遥操作 + 摄像头..."
+        echo "Starting teleoperation with cameras..."
         LEROBOT_TELEOP_METRICS_LOG="$TELEOP_METRICS_LOG" \
         LEROBOT_TELEOP_METRICS_EVERY_N="$TELEOP_METRICS_EVERY_N" \
         LEROBOT_TELEOP_ASYNC_DISPLAY="$TELEOP_ASYNC_DISPLAY" \
@@ -134,7 +133,7 @@ case "$choice" in
           --display_compressed_images="$DISPLAY_COMPRESSED_IMAGES"
         ;;
     1)
-        echo "启动纯遥操作..."
+        echo "Starting teleoperation without cameras..."
         LEROBOT_TELEOP_METRICS_LOG="$TELEOP_METRICS_LOG" \
         LEROBOT_TELEOP_METRICS_EVERY_N="$TELEOP_METRICS_EVERY_N" \
         "$LEROBOT_TELEOPERATE" \
@@ -147,7 +146,7 @@ case "$choice" in
           --fps="$TELEOP_FPS"
         ;;
     *)
-        echo "ERROR: 请选择 1 或 2" >&2
+        echo "ERROR: select 1 or 2" >&2
         exit 1
         ;;
 esac

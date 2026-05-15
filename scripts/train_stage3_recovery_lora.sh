@@ -4,10 +4,10 @@ set -uo pipefail
 # OpenPI pi0.5 CUHK curated Stage 3 recovery continuation training.
 #
 # Default run:
-#   bash control_scripts/40_train_openpi_stage3_curated_swap_x2.sh
+#   bash scripts/train_stage3_recovery_lora.sh
 #
-# Monitor:
-#   bash control_scripts/40_train_openpi_stage3_curated_swap_x2.sh --status
+# Status:
+#   bash scripts/train_stage3_recovery_lora.sh --status
 
 OPENPI_DIR="${OPENPI_DIR:-/home/ubuntu/openpi}"
 PYTHON_BIN="${PYTHON_BIN:-${OPENPI_DIR}/.venv/bin/python}"
@@ -55,7 +55,7 @@ show_status() {
   echo
   echo "=== OpenPI Stage 3 curated-swap training processes ==="
   ps -ef \
-    | grep -E 'compute_norm_stats.py|scripts/train.py|40_train_openpi_stage3_curated_swap_x2' \
+    | grep -E 'compute_norm_stats.py|scripts/train.py|train_stage3_recovery_lora' \
     | grep -v grep \
     | grep -v -- '--status' || true
   echo
@@ -73,7 +73,7 @@ show_status() {
 stop_training() {
   echo "Stopping OpenPI Stage 3 curated-swap training processes..."
   pkill -TERM -f "scripts/train.py ${CONFIG_NAME}" 2>/dev/null || true
-  pkill -TERM -f "40_train_openpi_stage3_curated_swap_x2.sh" 2>/dev/null || true
+  pkill -TERM -f "train_stage3_recovery_lora.sh" 2>/dev/null || true
   sleep 2
   show_status
 }
@@ -202,4 +202,4 @@ echo "$PID" > "$PID_FILE"
 echo "Started OpenPI Stage 3 curated-swap training manager."
 echo "PID: $PID"
 echo "Manager log: $MANAGER_LOG"
-echo "Status: bash control_scripts/40_train_openpi_stage3_curated_swap_x2.sh --status"
+echo "Status: bash scripts/train_stage3_recovery_lora.sh --status"

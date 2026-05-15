@@ -8,11 +8,11 @@
 #   - Record in C -> U -> H -> K order by default.
 #
 # Usage:
-#   bash control_scripts/24_record_cuhk_pick_place_slots.sh
-#   bash control_scripts/24_record_cuhk_pick_place_slots.sh C
-#   EPISODES_PER_LETTER=40 EPISODE_TIME_S=15 RESET_TIME_S=4 bash control_scripts/24_record_cuhk_pick_place_slots.sh all
+#   bash scripts/record_bootstrap_grounding.sh
+#   bash scripts/record_bootstrap_grounding.sh C
+#   EPISODES_PER_LETTER=40 EPISODE_TIME_S=15 RESET_TIME_S=4 bash scripts/record_bootstrap_grounding.sh all
 #
-# Hotkeys are inherited from control_scripts/09_record_data.sh:
+# Hotkeys are inherited from scripts/record_data.sh:
 #   Right Arrow  - finish current episode, start next
 #   Left Arrow   - rerecord current episode
 #   Esc          - stop recording
@@ -78,7 +78,7 @@ for letter in "${LETTERS[@]}"; do
     CAMERA_MAX_AGE_MS="$CAMERA_MAX_AGE_MS" \
     DATASET_FPS="$DATASET_FPS" \
     VIDEO_CODEC="$VIDEO_CODEC" \
-    bash "$SCRIPT_DIR/09_record_data.sh" \
+    bash "$SCRIPT_DIR/record_data.sh" \
         "$dataset_name" \
         "$task_desc" \
         "$EPISODES_PER_LETTER" \

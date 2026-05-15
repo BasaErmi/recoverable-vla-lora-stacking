@@ -3,14 +3,14 @@
 # Deploy the official OpenPI pi0.5 LoRA SO101 checkpoint.
 #
 # Usage:
-#   bash control_scripts/25_deploy_openpi_pi05_so101.sh C
-#   bash control_scripts/25_deploy_openpi_pi05_so101.sh U
-#   bash control_scripts/25_deploy_openpi_pi05_so101.sh "pick up the visible letter block from the top box and place it in its matching lower box"
+#   bash scripts/deploy_openpi_so101.sh C
+#   bash scripts/deploy_openpi_so101.sh U
+#   bash scripts/deploy_openpi_so101.sh "pick up the visible letter block from the top box and place it in its matching lower box"
 #
 # Stop/status helpers:
-#   bash control_scripts/25_deploy_openpi_pi05_so101.sh --status
-#   bash control_scripts/25_deploy_openpi_pi05_so101.sh --stop
-#   bash control_scripts/25_deploy_openpi_pi05_so101.sh --stop-server
+#   bash scripts/deploy_openpi_so101.sh --status
+#   bash scripts/deploy_openpi_so101.sh --stop
+#   bash scripts/deploy_openpi_so101.sh --stop-server
 # ============================================================
 
 set -euo pipefail
@@ -141,7 +141,6 @@ stop_client() {
     pkill -INT -f "openpi_so101_client.py" 2>/dev/null || true
     sleep 2
     pkill -TERM -f "openpi_so101_client.py" 2>/dev/null || true
-    bash "$SCRIPT_DIR/12_deploy_pick_letter.sh" --stop || true
 }
 
 stop_server() {
@@ -251,7 +250,7 @@ if [ ! -e "$FOLLOWER_PORT" ]; then
 fi
 if pgrep -f "openpi_so101_client.py" >/dev/null; then
     echo "ERROR: OpenPI SO101 client already running. Stop it with:" >&2
-    echo "  bash control_scripts/25_deploy_openpi_pi05_so101.sh --stop" >&2
+    echo "  bash scripts/deploy_openpi_so101.sh --stop" >&2
     exit 1
 fi
 if lsof "$FOLLOWER_PORT" >/dev/null 2>&1; then
@@ -296,8 +295,8 @@ evo_bin_dir=$EVO_BIN_DIR
 front_camera=$FRONT_CAMERA_INDEX ${FRONT_CAMERA_WIDTH}x${FRONT_CAMERA_HEIGHT}@${FRONT_CAMERA_FPS} fourcc=${FRONT_CAMERA_FOURCC:-none}
 wrist_camera=$WRIST_CAMERA_INDEX ${WRIST_CAMERA_WIDTH}x${WRIST_CAMERA_HEIGHT}@${WRIST_CAMERA_FPS} fourcc=${WRIST_CAMERA_FOURCC:-none}
 started_at=$(date)
-stop_client=bash control_scripts/25_deploy_openpi_pi05_so101.sh --stop
-stop_server=bash control_scripts/25_deploy_openpi_pi05_so101.sh --stop-server
+stop_client=bash scripts/deploy_openpi_so101.sh --stop
+stop_server=bash scripts/deploy_openpi_so101.sh --stop-server
 EOF
 
 echo "=== SO101 OpenPI pi0.5 Deployment ===" | tee -a "$CLIENT_LOG"

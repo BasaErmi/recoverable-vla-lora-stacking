@@ -1,42 +1,43 @@
 #!/usr/bin/env bash
 set -uo pipefail
 
-# OpenPI pi0.5 CUHK Stage 3 recovery-mix continuation training.
+# OpenPI pi0.5 CUHK Stage 4 continuation training.
 #
 # Default run:
-#   bash control_scripts/36_train_openpi_stage3_recovery_mix.sh
+#   bash scripts/train_stage4_curriculum_lora.sh
 #
-# Monitor:
-#   bash control_scripts/36_train_openpi_stage3_recovery_mix.sh --status
+# Status:
+#   bash scripts/train_stage4_curriculum_lora.sh --status
 
 OPENPI_DIR="${OPENPI_DIR:-/home/ubuntu/openpi}"
 PYTHON_BIN="${PYTHON_BIN:-${OPENPI_DIR}/.venv/bin/python}"
-CONFIG_NAME="${CONFIG_NAME:-pi05_so101_cuhksz_stage3_recovery_mix_lora}"
-DATASET_ID="${DATASET_ID:-guanlin8/cuhksz_pi05_stage3_recovery_mix_20260504}"
+CONFIG_NAME="${CONFIG_NAME:-pi05_so101_cuhksz_stage4_s2_recovery_x1_stage4_x4_lora}"
+DATASET_ID="${DATASET_ID:-guanlin8/cuhksz_pi05_stage4_s2_recovery_x1_stage4_x4_20260506}"
 LOG_DIR="${LOG_DIR:-/home/ubuntu/outputs/openpi/logs}"
-RUN_PREFIX="${RUN_PREFIX:-pi05_so101_stage3_recovery_mix_20260504_$(date +%Y%m%d_%H%M%S)_from_stage2_50k_lr3e-6}"
+RUN_PREFIX="${RUN_PREFIX:-pi05_so101_stage4_s2_recovery_x1_stage4_x4_20260506_$(date +%Y%m%d_%H%M%S)_from_stage3_curated_49999_lr8e-6}"
 MANAGER_LOG="${LOG_DIR}/${RUN_PREFIX}_manager.log"
 PID_FILE="${LOG_DIR}/${RUN_PREFIX}_manager.pid"
 NUM_TRAIN_STEPS="${NUM_TRAIN_STEPS:-50000}"
 BATCH_SIZES="${BATCH_SIZES:-2 1}"
 STATS_FILE="${STATS_FILE:-/home/ubuntu/outputs/openpi/assets/${CONFIG_NAME}/${DATASET_ID}/norm_stats.json}"
+RESUME="${RESUME:-0}"
 
 OOM_PATTERN="(out of memory|oom|resource exhausted|RESOURCE_EXHAUSTED|CUDA_ERROR_OUT_OF_MEMORY|cannot allocate memory|failed to allocate)"
 
-latest_stage3_log() {
+latest_stage4_log() {
   find "$LOG_DIR" -maxdepth 1 -type f \
-    -name 'pi05_so101_stage3_recovery_mix_20260504_*_from_stage2_50k_lr3e-6*_b*.log' \
+    -name 'pi05_so101_stage4_s2_recovery_x1_stage4_x4_20260506_*_from_stage3_curated_49999_lr8e-6*_b*.log' \
     -printf '%T@ %p\n' 2>/dev/null | sort -nr | awk 'NR==1 {print $2}'
 }
 
 latest_manager_pid_file() {
   find "$LOG_DIR" -maxdepth 1 -type f \
-    -name 'pi05_so101_stage3_recovery_mix_20260504_*_from_stage2_50k_lr3e-6*_manager.pid' \
+    -name 'pi05_so101_stage4_s2_recovery_x1_stage4_x4_20260506_*_from_stage3_curated_49999_lr8e-6*_manager.pid' \
     -printf '%T@ %p\n' 2>/dev/null | sort -nr | awk 'NR==1 {print $2}'
 }
 
 show_status() {
-  echo "=== OpenPI Stage 3 manager ==="
+  echo "=== OpenPI Stage 4 manager ==="
   local manager_pid_file manager_pid
   manager_pid_file="$(latest_manager_pid_file || true)"
   if [[ -n "${manager_pid_file:-}" ]]; then
@@ -49,20 +50,20 @@ show_status() {
       echo "Manager is not running."
     fi
   else
-    echo "No Stage 3 manager pid file found in $LOG_DIR"
+    echo "No Stage 4 manager pid file found in $LOG_DIR"
   fi
   echo
-  echo "=== OpenPI Stage 3 training processes ==="
+  echo "=== OpenPI Stage 4 training processes ==="
   ps -ef \
-    | grep -E 'compute_norm_stats.py|scripts/train.py|36_train_openpi_stage3_recovery_mix' \
+    | grep -E 'compute_norm_stats.py|scripts/train.py|train_stage4_curriculum_lora' \
     | grep -v grep \
     | grep -v -- '--status' || true
   echo
-  echo "=== Latest Stage 3 train log ==="
+  echo "=== Latest Stage 4 train log ==="
   local latest_log
-  latest_log="$(latest_stage3_log || true)"
+  latest_log="$(latest_stage4_log || true)"
   if [[ -z "${latest_log:-}" ]]; then
-    echo "No Stage 3 train log found in $LOG_DIR"
+    echo "No Stage 4 train log found in $LOG_DIR"
     return 0
   fi
   echo "$latest_log"
@@ -70,9 +71,9 @@ show_status() {
 }
 
 stop_training() {
-  echo "Stopping OpenPI Stage 3 training processes..."
+  echo "Stopping OpenPI Stage 4 training processes..."
   pkill -TERM -f "scripts/train.py ${CONFIG_NAME}" 2>/dev/null || true
-  pkill -TERM -f "36_train_openpi_stage3_recovery_mix.sh" 2>/dev/null || true
+  pkill -TERM -f "train_stage4_curriculum_lora.sh" 2>/dev/null || true
   sleep 2
   show_status
 }
@@ -81,7 +82,7 @@ run_manager() {
   mkdir -p "$LOG_DIR"
   exec >> "$MANAGER_LOG" 2>&1
 
-  echo "=== OpenPI pi0.5 SO101 Stage 3 recovery-mix training manager ==="
+  echo "=== OpenPI pi0.5 SO101 Stage 4 training manager ==="
   echo "Started: $(date -Is)"
   echo "Config: $CONFIG_NAME"
   echo "Dataset: $DATASET_ID"
@@ -89,6 +90,7 @@ run_manager() {
   echo "Steps: $NUM_TRAIN_STEPS"
   echo "Batch sizes: $BATCH_SIZES"
   echo "Norm stats: $STATS_FILE"
+  echo "Resume: $RESUME"
 
   cd "$OPENPI_DIR" || exit 1
 
@@ -120,10 +122,15 @@ run_manager() {
     TRAIN_PID_FILE="${LOG_DIR}/${EXP_NAME}.pid"
 
     echo
-    echo "=== Attempting Stage 3 training with batch_size=${BATCH_SIZE} ==="
+    echo "=== Attempting Stage 4 training with batch_size=${BATCH_SIZE} ==="
     echo "Experiment: $EXP_NAME"
     echo "Train log: $TRAIN_LOG"
     echo "$$" > "$TRAIN_PID_FILE"
+
+    TRAIN_MODE_ARGS=(--overwrite)
+    if [[ "$RESUME" == "1" ]]; then
+      TRAIN_MODE_ARGS=(--resume)
+    fi
 
     "$PYTHON_BIN" scripts/train.py "$CONFIG_NAME" \
       --exp-name "$EXP_NAME" \
@@ -133,7 +140,7 @@ run_manager() {
       --save-interval 1000 \
       --keep-period 5000 \
       --no-wandb-enabled \
-      --overwrite \
+      "${TRAIN_MODE_ARGS[@]}" \
       >> "$TRAIN_LOG" 2>&1
     STATUS=$?
 
@@ -170,12 +177,12 @@ case "${1:-}" in
     ;;
 esac
 
-if [[ "${_STAGE3_MANAGER:-0}" == "1" ]]; then
+if [[ "${_STAGE4_MANAGER:-0}" == "1" ]]; then
   run_manager
 fi
 
 mkdir -p "$LOG_DIR"
-setsid env _STAGE3_MANAGER=1 \
+setsid env _STAGE4_MANAGER=1 \
   OPENPI_DIR="$OPENPI_DIR" \
   PYTHON_BIN="$PYTHON_BIN" \
   CONFIG_NAME="$CONFIG_NAME" \
@@ -187,11 +194,12 @@ setsid env _STAGE3_MANAGER=1 \
   NUM_TRAIN_STEPS="$NUM_TRAIN_STEPS" \
   BATCH_SIZES="$BATCH_SIZES" \
   STATS_FILE="$STATS_FILE" \
+  RESUME="$RESUME" \
   "$0" >> /dev/null 2>&1 < /dev/null &
 PID=$!
 echo "$PID" > "$PID_FILE"
 
-echo "Started OpenPI Stage 3 recovery-mix training manager."
+echo "Started OpenPI Stage 4 training manager."
 echo "PID: $PID"
 echo "Manager log: $MANAGER_LOG"
-echo "Status: bash control_scripts/36_train_openpi_stage3_recovery_mix.sh --status"
+echo "Status: bash scripts/train_stage4_curriculum_lora.sh --status"
