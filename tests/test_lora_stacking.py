@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import numpy as np
 
-import lora_stacking
+from recoverable_vla_lora_stacking import lora_stacking
 
 
 def test_dense_lora_update_contracts_rank_axis() -> None:

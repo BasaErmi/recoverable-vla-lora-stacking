@@ -27,8 +27,10 @@ Click the link to watch the full demo video: https://doi.org/10.5281/zenodo.2005
   - `openpi/scripts/train.py`
   - `openpi/scripts/compute_norm_stats.py`
   - `openpi/scripts/serve_policy.py`
-- `lora_stacking.py`: weight-space Curriculum LoRA Stacking exporter.
-- `test_lora_stacking.py`: lightweight tests for the stacking math.
+- `recoverable_vla_lora_stacking/`: project-specific Python package.  Its
+  `lora_stacking.py` module implements the weight-space Curriculum LoRA
+  Stacking exporter used in the report.
+- `tests/`: lightweight tests for the stacking math.
 
 ## Main Workflow
 
@@ -91,7 +93,7 @@ The configs used by these launchers live in
 ### 5. Export LoRA Stacking Checkpoint
 
 ```bash
-PYTHONPATH="$PWD/openpi/src" python lora_stacking.py \
+PYTHONPATH="$PWD/openpi/src:$PWD" python -m recoverable_vla_lora_stacking.lora_stacking \
   --adapter stage2=/path/to/stage2/50000/params \
   --adapter stage3=/path/to/stage3/49999/params \
   --adapter stage4=/path/to/stage4/49999/params \
@@ -122,9 +124,9 @@ The same deployment script can serve a stacked checkpoint by setting
 ## Quick Checks
 
 ```bash
-python -m pytest test_lora_stacking.py -q
+python -m pytest tests -q
 bash -n scripts/*.sh
-python -m py_compile lora_stacking.py scripts/*.py
+python -m py_compile recoverable_vla_lora_stacking/*.py scripts/*.py
 ```
 
 These checks validate syntax and the standalone LoRA stacking math.  Real

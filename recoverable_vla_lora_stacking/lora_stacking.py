@@ -18,7 +18,8 @@ checkpoint layout:
 
 Example:
 
-    PYTHONPATH=/path/to/openpi/src python lora_stacking.py \
+    PYTHONPATH=/path/to/openpi/src:/path/to/repo \
+      python -m recoverable_vla_lora_stacking.lora_stacking \
       --adapter stage2=/path/to/stage2/50000/params \
       --adapter stage3=/path/to/stage3/49999/params \
       --adapter stage4=/path/to/stage4/49999/params \
@@ -354,7 +355,10 @@ def write_manifest(output_checkpoint: Path, report: Mapping[str, Any], *, overwr
 
 
 def build_arg_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(
+        prog="python -m recoverable_vla_lora_stacking.lora_stacking",
+        description=__doc__,
+    )
     parser.add_argument(
         "--adapter",
         action="append",

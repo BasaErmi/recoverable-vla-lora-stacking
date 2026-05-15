@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "recoverable-vla-lora-stacking"
+version = "0.1.0"
+description = "Clean code for prompted curriculum learning and LoRA stacking on a real-robot VLA adaptation benchmark."
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "Apache-2.0"}
+dependencies = [
+  "numpy>=1.23",
+]
+
+[project.optional-dependencies]
+test = [
+  "pytest>=7",
+]
+
+[tool.setuptools]
+packages = ["recoverable_vla_lora_stacking"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
